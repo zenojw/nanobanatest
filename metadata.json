@@ -1,0 +1,8 @@
+{
+  "name": "나노 바나나 크리에이티브",
+  "description": "고품질 이미지 생성을 위한 Nano Banana 기반의 크리에이티브 스튜디오입니다.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
