@@ -16,7 +16,8 @@ import {
   Heart, 
   MessageSquare,
   Plus,
-  Zap
+  Zap,
+  ShieldAlert
 } from 'lucide-react';
 import { GoogleGenAI, Modality } from "@google/genai";
 import { clsx, type ClassValue } from 'clsx';
@@ -92,12 +93,19 @@ export default function App() {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const generateImage = async () => {
     if (!imagePrompt.trim()) return;
     setIsGeneratingImage(true);
+    setErrorMessage(null);
     try {
       const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
+      
+      if (!apiKey || apiKey === 'undefined' || apiKey === 'MY_GEMINI_API_KEY') {
+        throw new Error("API 키가 설정되지 않았습니다. AI Studio의 'Secrets' 패널에서 GEMINI_API_KEY를 설정해 주세요.");
+      }
+
       const ai = new GoogleGenAI({ apiKey });
       
       const response = await ai.models.generateContent({
@@ -129,6 +137,7 @@ export default function App() {
       }
     } catch (error) {
       console.error("이미지 생성 실패:", error);
+      setErrorMessage(error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.");
     } finally {
       setIsGeneratingImage(false);
     }
@@ -259,6 +268,17 @@ export default function App() {
                     <div className="space-y-4">
                       <RefreshCw className="w-12 h-12 text-neon-yellow animate-spin mx-auto" />
                       <p className="font-display uppercase text-2xl">당신의 비전을 렌더링 중입니다...</p>
+                    </div>
+                  ) : errorMessage ? (
+                    <div className="space-y-4 text-red-400">
+                      <ShieldAlert className="w-12 h-12 mx-auto" />
+                      <p className="font-bold text-sm">{errorMessage}</p>
+                      <button 
+                        onClick={() => setErrorMessage(null)}
+                        className="text-[10px] uppercase underline tracking-widest opacity-60 hover:opacity-100"
+                      >
+                        다시 시도
+                      </button>
                     </div>
                   ) : (
                     <>
